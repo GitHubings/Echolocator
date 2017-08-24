@@ -7,6 +7,7 @@
 
 # Python imports
 from math import *
+from objloader import *
 
 # OpenGL imports for python
 try:
@@ -18,10 +19,46 @@ except:
 
 # Last time when sphere was re-displayed
 last_time = 0
+rotating = False
+scaling  = False
+scale = 1.
 
+def screen2space(x, y):
+    width, height = glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT)
+    radius = min(width, height)*scale
+    return (2.*x-width)/radius, -(2.*y-height)/radius
 
 # The sphere class
 class Sphere:
+
+    def mouse(bla, button, state, x, y):
+        #print "starting mouse"
+        #print button
+        #print state
+        #print x
+        #print y
+        #print bla
+        global rotating, scaling, x0, y0
+        if button == GLUT_LEFT_BUTTON:
+            rotating = (state == GLUT_DOWN)
+        elif button == GLUT_RIGHT_BUTTON:
+            scaling = (state == GLUT_DOWN)
+        x0, y0 = x, y
+
+    def motion(bla, x1, y1):
+        #print "starting motion"
+        #print x1
+        #print y1
+        #print bla
+        global x0, y0, rotation, scale
+        if rotating:
+            p0 = screen2space(x0, y0)
+            p1 = screen2space(x1, y1)
+        if scaling:
+            scale *= exp(((x1-x0)-(y1-y0))*.01)
+            x0, y0 = x1, y1
+            glutPostRedisplay()
+
     def onKeyUp(*args):
         print(args[1])
         if (args[1] == b'd'):
@@ -37,9 +74,12 @@ class Sphere:
                 f.write("\n")
         return
     # Constructor for the sphere class
-    def __init__(self, radius): 
-
+    def __init__(self, radius, objname):
+        print(objname)
+        self.object3d = OBJ(objname, swapyz=False)
         glutKeyboardUpFunc(self.onKeyUp)
+        glutMouseFunc(self.mouse)
+        glutMotionFunc(self.motion)
 
         # Radius of sphere
         self.radius = radius
@@ -125,28 +165,9 @@ class Sphere:
 
     # Draw the sphere
     def draw(self):
-        for i in range(0, self.lats + 1):
-            lat0 = pi * (-0.5 + float(float(i - 1) / float(self.lats)))
-            z0 = sin(lat0)
-            zr0 = cos(lat0)
-
-            lat1 = pi * (-0.5 + float(float(i) / float(self.lats)))
-            z1 = sin(lat1)
-            zr1 = cos(lat1)
-
-            # Use Quad strips to draw the sphere
-            glBegin(GL_QUAD_STRIP)
-
-            for j in range(0, self.longs + 1):
-                lng = 2 * pi * float(float(j - 1) / float(self.longs))
-                x = cos(lng)
-                y = sin(lng)
-                glNormal3f(x * zr0, y * zr0, z0)
-                glVertex3f(x * zr0, y * zr0, z0)
-                glNormal3f(x * zr1, y * zr1, z1)
-                glVertex3f(x * zr1, y * zr1, z1)
-
-            glEnd()
+        #glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        #glLoadIdentity()
+        glCallList(self.object3d.gl_list)
 
     # Keyboard controller for sphere
     def special(self, key, x, y):
@@ -207,7 +228,7 @@ def main():
     glutCreateWindow(b'Sphere')
 
     # Instantiate the sphere object
-    s = Sphere(1.0)
+    s = Sphere(1.0, 'obj.obj')
 
     s.init()
 
