@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-
+ 
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
@@ -61,6 +61,7 @@ def Cube():
 
 
 def main():
+	flag = 0
 	pygame.init()
 	display = (800,600)
 	pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
@@ -76,12 +77,27 @@ def main():
 	while True:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				pygame.quite()
+				pygame.quit()
 				quite()
 				
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
 		glRotatef(1, 2, 1, 3)
 		Cube()
+		#width, height = getViewPort()
+		width, height = pygame.display.get_surface().get_size()
+
+		depth = glReadPixelsub(0,0, width, height, GL_DEPTH_COMPONENT, GL_FLOAT )
+		
+		if flag == 0:
+			flag = 0
+			f = open("C:/Development/Test.txt", "w");
+			for i in range(len(depth)):
+				for j in range(len(depth[i])):
+						f.write(str(depth[i][j]))
+						f.write(" ")
+				f.write("\n")
+
+	
 		pygame.display.flip()
 		pygame.time.wait(10)
 
