@@ -22,9 +22,24 @@ last_time = 0
 
 # The sphere class
 class Sphere:
-
+    def onKeyUp(*args):
+        print(args[1])
+        if (args[1] == b'd'):
+            width = glutGet(GLUT_WINDOW_WIDTH)
+            height = glutGet(GLUT_WINDOW_HEIGHT)
+            depth = glReadPixelsub(0,0, width, height, GL_DEPTH_COMPONENT, GL_FLOAT)
+            f = open("depthframe.txt", "w");
+            print("saving depth frame")
+            for i in range(len(depth)):
+                for j in range(len(depth[i])):
+                    f.write(str(depth[i][j]))
+                    f.write(" ")
+                f.write("\n")
+        return
     # Constructor for the sphere class
     def __init__(self, radius): 
+
+        glutKeyboardUpFunc(self.onKeyUp)
 
         # Radius of sphere
         self.radius = radius
@@ -106,16 +121,7 @@ class Sphere:
         glShadeModel(self.surface)
 
         self.draw()
-        glutSwapBuffers()
-        width = glutGet(GLUT_WINDOW_WIDTH)
-        height = glutGet(GLUT_WINDOW_HEIGHT)
-        depth = glReadPixelsub(0,0, width, height, GL_DEPTH_COMPONENT, GL_FLOAT)
-        f = open("C:/Development/Test.txt", "w");
-        for i in range(len(depth)):
-            for j in range(len(depth[i])):
-                f.write(str(depth[i][j]))
-                f.write(" ")
-            f.write("\n")
+        glutSwapBuffers() 
 
     # Draw the sphere
     def draw(self):
